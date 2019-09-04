@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            margin: 0;
+            background: #7D370E;
+            font-family: "helvetica";
+        }
+
+        #detail {
+            height: calc(100vh - 17px);
+            width: 100vw;
+
+
+        }
+
+        #detail .close {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            font-size: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            border: none;
+        }
+
+        #detail .item {
+
+            margin: 4rem auto;
+            padding: 4rem;
+            background: white;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        img {
+            width: 100%;
+        }
+
+        @media screen and (min-width: 990px) {
+            width: calc(100vw - 17px);
+        }
+    </style>
+</head>
+
+<body>
+    <section id="detail">
+        <article class="item">
+            <button class="close">←</button>
+
+            <img src="" alt="">
+            <h2></h2>
+
+            <p class="info"></p>
+            <p class="origin"></p>
+            <p class="info_long"></p>
+            <p class="cost"></p>
+
+        </article>
+    </section>
+
+</body></html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", getJson);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const github = urlParams.get("github");
+
+    let menu = [];
+
+    async function getJson() {
+
+        let jsonData = await fetch("https://spreadsheets.google.com/feeds/list/17Dd7DvkPaFamNUdUKlrFgnH6POvBJXac7qyiS6zNRw0/od6/public/values?alt=json");
+        menu = await jsonData.json();
+        show();
+
+    }
+
+    function show() {
+        console.log("hej 3");
+        console.log(document.querySelector(".close"));
+        document.querySelector(".close").addEventListener("click", function() {
+            console.log("Nu går vi tilbage");
+            history.back();
+        });
+
+        menu.feed.entry.forEach(item => {
+            if (item.gsx$id.$t == github) {
+                document.querySelector("#detail h2").textContent = item.gsx$navn.$t;
+                document.querySelector("#detail .origin").textContent = `Oprindelse: ${item.gsx$oprindelse.$t}`;
+                document.querySelector("#detail img").src = `images/large/${item.gsx$billede.$t}.jpg`;
+                document.querySelector("#detail img").alt = `Portræt af ${item.gsx$navn.$t}`;
+                document.querySelector("#detail .info").textContent = item.gsx$kort.$t;
+                document.querySelector("#detail .info_long").textContent = item.gsx$lang.$t;
+
+                document.querySelector("#detail .cost").textContent = `Pris: ${item.gsx$pris.$t},-`;
+
+            }
+
+        });
+
+    }
+
+</script>

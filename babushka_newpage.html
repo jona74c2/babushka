@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            font-family: "helvetica";
+            margin: 0;
+        }
+
+        p,
+        h2 {
+            padding: 0;
+            margin: 0;
+        }
+
+        #top {
+            width: calc(100vw - 17px);
+            background-color: #7D370E;
+            display: flex;
+        }
+
+        #star {
+            max-height: 200px;
+            max-width: 200px;
+        }
+
+        h3 {
+            margin-top: 66px;
+            margin-left: 10px;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .container {
+            display: grid;
+            grid-gap: 10px;
+        }
+
+        #item .name,
+        #item .info,
+        #item .cost {
+            padding: 10px;
+        }
+
+        nav,
+        h1 {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .filter {
+            margin: 3px;
+            margin-bottom: 7px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid lightgrey;
+        }
+
+        .chosen {
+            background-color: orangered;
+            font-weight: 600;
+        }
+
+        @media screen and (min-width:600px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media screen and (min-width:768px) {
+            .container {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 960px;
+                margin: 0 auto;
+            }
+        }
+
+        img {
+            width: 100%;
+        }
+    </style>
+</head>
+<header>
+    <div id="top">
+        <img src="images/star.svg" alt="" id="star">
+        <h3>Bistro Babushka</h3>
+    </div>
+    <nav class="menu">
+        <button class="filter chosen" data-menuitem="alle">Alle</button>
+        <button class="filter" data-menuitem="forretter">Forretter</button>
+        <button class="filter" data-menuitem="hovedretter">Hovedretter</button>
+        <button class="filter" data-menuitem="desserter">Desserter</button>
+        <button class="filter" data-menuitem="sideorders">Drikkevarer</button>
+    </nav>
+    <h1>Alle</h1>
+</header>
+
+<body>
+    <section class="container"></section>
+    <template>
+        <article id="item">
+            <img src="" alt="">
+            <h2 class="name"></h2>
+            <p class="info"></p>
+            <p class="cost"></p>
+        </article>
+    </template>
+</body></html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", getJson);
+
+    let menu = [];
+    let filter = "alle";
+    let bool = true;
+    const itemTemplate = document.querySelector("template");
+    const container = document.querySelector(".container");
+
+    async function getJson() {
+        let jsonData = await fetch("https://spreadsheets.google.com/feeds/list/17Dd7DvkPaFamNUdUKlrFgnH6POvBJXac7qyiS6zNRw0/od6/public/values?alt=json");
+        menu = await jsonData.json();
+        console.log(menu);
+        initiateFilterButtons();
+        showMenu();
+    }
+
+    function initiateFilterButtons() {
+        document.querySelectorAll(".filter").forEach(elm => {
+            elm.addEventListener("click", filtering);
+        })
+
+    }
+
+    function filtering() {
+        filter = this.dataset.menuitem;
+
+        document.querySelector("h1").textContent = this.textContent;
+
+        document.querySelectorAll(".filter").forEach(elm => {
+            elm.classList.remove("chosen");
+        })
+        this.classList.add("chosen");
+
+        showMenu();
+    }
+
+    function showMenu() {
+        container.innerHTML = "";
+        menu.feed.entry.forEach(item => {
+            console.log("Item categori: " + item.gsx$kategori.$t + " filter: " + filter);
+            if (filter == "alle" || item.gsx$kategori.$t == filter) {
+                let clone = itemTemplate.cloneNode(true).content;
+
+                clone.querySelector("img").src = `images/small/${item.gsx$billede.$t}-sm.jpg`;
+                clone.querySelector("img").alt = item.gsx$billede.$t;
+
+                clone.querySelector("h2").textContent = item.gsx$navn.$t;
+                clone.querySelector(".info").textContent = item.gsx$kort.$t;
+                clone.querySelector(".cost").textContent = `Pris: ${item.gsx$pris.$t},-`;
+
+
+                if (bool) {
+                    clone.querySelector("#item").style.backgroundColor = "lightgrey";
+                    bool = false;
+                } else {
+                    bool = true;
+                }
+
+                container.append(clone);
+                container.lastElementChild.addEventListener("click", () => {
+                    location.href = `babushka_detail.html?github=${item.gsx$id.$t}`;
+                });
+            }
+        })
+
+    }
+</script>
